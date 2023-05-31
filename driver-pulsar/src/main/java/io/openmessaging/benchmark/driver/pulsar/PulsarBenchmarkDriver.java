@@ -160,6 +160,10 @@ public class PulsarBenchmarkDriver implements BenchmarkDriver {
 
     @Override
     public CompletableFuture<Void> createTopic(String topic, int partitions) {
+        if (config.client.connectorTesting) {
+            // In connector testing mode we have precreated input and output topics,
+            return CompletableFuture.completedFuture(null);
+        }
         if (partitions == 1) {
             log.info("Create topic: {}", topic);
             return adminClient.topics().createNonPartitionedTopicAsync(topic);
@@ -170,13 +174,15 @@ public class PulsarBenchmarkDriver implements BenchmarkDriver {
 
     @Override
     public CompletableFuture<BenchmarkProducer> createProducer(String topic) {
-        return producerBuilder.topic(topic).createAsync()
+        String topicName = config.client.connectorTesting ? config.producer.inputTopic : topic;
+        return producerBuilder.topic(topicName).createAsync()
                         .thenApply(PulsarBenchmarkProducer::new);
     }
 
     @Override
     public CompletableFuture<BenchmarkConsumer> createConsumer(String topic, String subscriptionName,
                     ConsumerCallback consumerCallback) {
+        String topicName = config.client.connectorTesting ? config.consumer.outputTopic : topic;
         SubscriptionType subscriptionType = SubscriptionType.valueOf(config.consumer.subscriptionType);
         SubscriptionMode subscriptionMode = SubscriptionMode.valueOf(config.consumer.subscriptionMode);
         log.info("Creating consumer subscriptionType {} subscriptionMode {}", subscriptionType, subscriptionMode);
@@ -190,7 +196,7 @@ public class PulsarBenchmarkDriver implements BenchmarkDriver {
             // messages dispatched but not acknowledged for very long time
             consumer.acknowledgeAsync(msg);
             consumerCallback.messageReceived(msg.getData(), msg.getPublishTime());
-        }).topic(topic).subscriptionName(subscriptionName).subscribeAsync()
+        }).topic(topicName).subscriptionName(subscriptionName).subscribeAsync()
                         .thenApply(consumer -> new PulsarBenchmarkConsumer(consumer));
 
 
