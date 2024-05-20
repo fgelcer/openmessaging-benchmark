@@ -83,7 +83,12 @@ public class WorkloadGenerator implements AutoCloseable {
         TestResult result = null;
         try {
             Timer timer = new Timer();
-            List<String> topics = worker.createTopics(new TopicsInfo(workload.topics, workload.partitionsPerTopic));
+            // List<String> topics = worker.createTopics(new TopicsInfo(workload.topics, workload.partitionsPerTopic));
+            
+            // Adding hardcoded topics to bypass the Kafka API
+            List<String> topics = new ArrayList<>();
+            topics.add("custom_topic");
+
             log.info("Created {} topics in {} ms", topics.size(), timer.elapsedMillis());
             for (String topic: topics) {
                 log.info("Topic: {}", topic);

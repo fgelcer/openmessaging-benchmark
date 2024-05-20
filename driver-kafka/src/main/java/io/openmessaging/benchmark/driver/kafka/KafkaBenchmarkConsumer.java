@@ -42,12 +42,13 @@ public class KafkaBenchmarkConsumer implements BenchmarkConsumer {
 
     private final ExecutorService executor;
     private final Future<?> consumerTask;
-    private boolean sync;
+    // private boolean sync;
     private volatile boolean closing = false;
     private volatile boolean finished = false;
-    private boolean autoCommit;
+    // private boolean autoCommit;
 
-    public KafkaBenchmarkConsumer(KafkaConsumer<String, byte[]> consumer, Properties consumerConfig, ConsumerCallback callback, boolean useSync) {
+    // Override Constructor in order to bypass consumer groups
+/*     public KafkaBenchmarkConsumer(KafkaConsumer<String, byte[]> consumer, Properties consumerConfig, ConsumerCallback callback, boolean useSync) {
         this.consumer = consumer;
         this.sync = useSync;
         this.executor = Executors.newSingleThreadExecutor();
@@ -77,6 +78,24 @@ public class KafkaBenchmarkConsumer implements BenchmarkConsumer {
                 }
             }
             finished = true;
+        });
+    } */
+
+    public KafkaBenchmarkConsumer(KafkaConsumer<String, byte[]> consumer, Properties consumerConfig, ConsumerCallback callback, boolean useSync) {
+        this.consumer = consumer;
+        this.executor = Executors.newSingleThreadExecutor();
+        this.consumerTask = this.executor.submit(() -> {
+            while (!closing) {
+                try {
+                    ConsumerRecords<String, byte[]> records = consumer.poll(Duration.ofMillis(100));
+    
+                    for (ConsumerRecord<String, byte[]> record : records) {
+                        callback.messageReceived(record.value(), record.timestamp());
+                    }
+                } catch(Exception e) {
+                    log.error("Exception occurred while consuming message", e);
+                }
+            }
         });
     }
 

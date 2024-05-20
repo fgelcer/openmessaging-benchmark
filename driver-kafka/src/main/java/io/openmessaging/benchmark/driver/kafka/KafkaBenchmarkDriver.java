@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import org.apache.bookkeeper.stats.StatsLogger;
 import org.apache.kafka.clients.admin.AdminClient;
@@ -38,6 +39,8 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.UnknownTopicOrPartitionException;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
@@ -149,11 +152,20 @@ public class KafkaBenchmarkDriver implements BenchmarkDriver {
             ConsumerCallback consumerCallback) {
         Properties properties = new Properties();
         consumerProperties.forEach((key, value) -> properties.put(key, value));
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, subscriptionName);
+        // properties.put(ConsumerConfig.GROUP_ID_CONFIG, "");
+        properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
         KafkaConsumer<String, byte[]> kafkaConsumer = new KafkaConsumer<>(properties);
         try {
             // Subscribe
-            kafkaConsumer.subscribe(Arrays.asList(topic));
+            // Comment out subscription to bypass groups
+            //kafkaConsumer.subscribe(Arrays.asList(topic));
+
+            // Assignment (addition for bypassing consumer-groups)
+            List<PartitionInfo> partitions = kafkaConsumer.partitionsFor(topic);
+            List<TopicPartition> topicPartitions = partitions.stream()
+                .map(partitionInfo -> new TopicPartition(partitionInfo.topic(), partitionInfo.partition()))
+                .collect(Collectors.toList());
+            kafkaConsumer.assign(topicPartitions);
 
             // Start polling
             BenchmarkConsumer benchmarkConsumer = new KafkaBenchmarkConsumer(kafkaConsumer, consumerProperties, consumerCallback, config.sync);
