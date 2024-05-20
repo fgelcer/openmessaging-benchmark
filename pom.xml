@@ -87,6 +87,8 @@
 						<exclude>**/*.htm</exclude>
 						<exclude>**/.pydevproject</exclude>
                                                 <exclude>**/*.sh</exclude>
+						<exclude>**/Dockerfile</exclude>
+						<exclude>**/docker-compose.yml</exclude>
 					</excludes>
 					<mapping>
 						<benchmark>SCRIPT_STYLE</benchmark>

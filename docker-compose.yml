@@ -1,0 +1,18 @@
+version: '3'
+services:
+  omb-on-vast:
+    build: .
+    container_name: openmessaging-benchmark-omb-on-vast
+    network_mode: host
+    ports:
+      - "8080:80"
+    environment:
+      - IP=${IP:-0.0.0.0}
+      - PORT=${PORT:-9092}
+      - DRIVER_FILE=${DRIVER_FILE:-./driver-kafka/kafka.yaml}
+      - WORKLOAD_FILE=${WORKLOAD_FILE:-./workloads/1-topic-2-partitions-20b.yaml}
+    volumes:
+      - ./kafka-driver:/app/kafka-driver
+      - ./workloads:/app/workloads
+    command: ["./start-benchmark.sh"]
+    tty: true
