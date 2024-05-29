@@ -10,11 +10,18 @@ ARG BRANCH=topic-groups-bypass
 # Set the working directory
 WORKDIR /app
 
+# Copy the repositry from host to container
+COPY . /app/openmessaging-benchmark
+
+
 # Clone the specified branch of the GitHub repository
-RUN git clone --branch ${BRANCH} https://github.com/fgelcer/openmessaging-benchmark.git
+# RUN git clone --branch ${BRANCH} https://github.com/fgelcer/openmessaging-benchmark.git
 
 # Change working directory to the cloned repository
 WORKDIR /app/openmessaging-benchmark
+
+# Ensure the correct branch is checked out
+RUN git checkout ${BRANCH}
 
 # Build the project using Maven
 RUN mvn clean install
