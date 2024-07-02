@@ -1,4 +1,4 @@
-name: 1-topic-144-partitions-500mb-4p-4c
+name: 1-topic-144-partitions-500mb-4p-32c
 
 topics: 1
 partitionsPerTopic: 144
