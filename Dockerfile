@@ -24,7 +24,7 @@ WORKDIR /app/openmessaging-benchmark
 RUN git checkout ${BRANCH}
 
 # Build the project using Maven
-RUN mvn clean install
+RUN mvn clean install -Dlicense.skip=True
 
 # Ensure benchmark.sh is executable
 RUN chmod +x ./bin/benchmark
