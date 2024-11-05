@@ -23,10 +23,10 @@ useTransactions: false
 maxConcurrentTransactions: 100
 
 # Kafka client-specific configuration
-replicationFactor: 3
+replicationFactor: 1
 
 topicConfig: |
-  min.insync.replicas=2
+  min.insync.replicas=1
 
 commonConfig: |
   bootstrap.servers=${kafkaServiceUrl:-localhost:9092}
@@ -38,4 +38,4 @@ producerConfig: |
 
 consumerConfig: |
   auto.offset.reset=earliest
-  enable.auto.commit=false
+  enable.auto.commit=true
